@@ -12,8 +12,59 @@
     tools:context="com.feridgoranatanas.projectpinkifinki.MainActivity"
     tools:showIn="@layout/activity_main">
 
+
+    <ImageView
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:id="@+id/imageLogo"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentRight="false"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentLeft="true"
+        android:background="#00ffffff" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Hello World!" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/textTitle"
+        android:background="#00ffffff"
+        android:text="@string/go_run"
+        android:textColor="#262626"
+        android:textSize="50dp"
+        android:textStyle="bold"
+        android:typeface="sans"
+        android:layout_alignParentTop="false"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="10dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/see_all_runs"
+        android:id="@+id/buttonAllRuns"
+        android:textColor="#FFFFFF"
+        android:background="#262626"
+        android:textSize="20dp"
+        android:width="200dp"
+        android:height="50dp"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:clickable="true"
+        android:layout_marginBottom="50dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/start_running"
+        android:id="@+id/buttonStartRunning"
+        android:textColor="#FFFFFF"
+        android:background="#262626"
+        android:layout_above="@+id/buttonAllRuns"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="30dp"
+        android:textSize="20dp"
+        android:clickable="true"
+        android:height="50dp"
+        android:width="200dp" />
 </RelativeLayout>

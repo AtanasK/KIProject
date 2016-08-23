@@ -31,22 +31,22 @@ public class LogoAnimation extends AppCompatActivity {
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
 
-        waitAndStartMain();
+        waitAndStartActivity(3000, MainActivity.class);
     }
 
-    private void waitAndStartMain() {
+    private void waitAndStartActivity(final int miliSeconds, final Class<?> cls) {
 
         //Wait for 3 seconds
         Thread t = new Thread(new Runnable() {
             @Override
             public void run() {
                 long currentTime = android.os.SystemClock.uptimeMillis();
-                while(android.os.SystemClock.uptimeMillis() - currentTime < 3000) {
+                while(android.os.SystemClock.uptimeMillis() - currentTime < miliSeconds) {
                     //do nothing
                 }
 
                 //After waiting for 3 seconds redirect to main page
-                Intent main = new Intent(LogoAnimation.this, MainActivity.class);
+                Intent main = new Intent(LogoAnimation.this, cls);
                 startActivity(main);
             }
         });
