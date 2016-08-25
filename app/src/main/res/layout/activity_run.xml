@@ -7,15 +7,27 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    tools:context="com.feridgoranatanas.projectpinkifinki.RunActivity">
+    tools:context="com.feridgoranatanas.projectpinkifinki.RunActivity"
+    android:background="#fafafa">
 
-    <TextView
+    <com.feridgoranatanas.projectpinkifinki.GIFView
+        android:id="@+id/runGif"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="This is where you run"
-        android:id="@+id/textView2"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="100dp"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="I'M DONE RUNNING!"
+        android:id="@+id/buttonDoneRunning"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="50dp"
+        android:width="250dp"
+        android:height="50dp"
+        android:textSize="20dp"
+        android:background="#262626"
+        android:textColor="#ffffff" />
 </RelativeLayout>

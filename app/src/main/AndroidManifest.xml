@@ -28,7 +28,14 @@
             android:value="@integer/google_play_services_version" />
 
         <activity android:name=".AllRunsActivity" />
-        <activity android:name=".RunActivity"></activity>
+        <activity android:name=".RunActivity" />
+
+        <service
+            android:name=".RunService"
+            android:enabled="true"
+            android:exported="true" />
+
+        <activity android:name=".RunStatsActivity" />
     </application>
 
 </manifest>
