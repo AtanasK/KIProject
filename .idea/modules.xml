@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/FGAProject.iml" filepath="$PROJECT_DIR$/FGAProject.iml" />
+      <module fileurl="file://$PROJECT_DIR$/KIProject.iml" filepath="$PROJECT_DIR$/KIProject.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
     </modules>
   </component>

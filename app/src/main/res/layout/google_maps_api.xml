@@ -1,0 +1,15 @@
+<LinearLayout
+    android:layout_height="wrap_content"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:id="@+id/map">
+    <resources android:layout_width="381dp"
+        android:layout_height="287dp">
+        <string
+            android:name="google_maps_key"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+            AIzaSyDvfBiAXQw6SUBkE-Nw1C_cVtOkwMoyRu0
+        </string>
+    </resources>
+</LinearLayout>
