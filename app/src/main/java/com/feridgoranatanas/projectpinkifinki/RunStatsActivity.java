@@ -7,6 +7,10 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.ArrayList;
+
 public class RunStatsActivity extends AppCompatActivity {
 
     @Override
@@ -16,7 +20,8 @@ public class RunStatsActivity extends AppCompatActivity {
 
         Bundle bundle = getIntent().getExtras();
         TextView testView = (TextView)findViewById(R.id.textStats);
-        testView.setText(String.format("%d", bundle.getInt("time")));
+        ArrayList<LatLng> coordsList = (ArrayList<LatLng>)bundle.get("coords");
+        testView.setText(String.format("%d \n Last Coord: %f, %f", bundle.getInt("time"), coordsList.get(0).latitude, coordsList.get(0).longitude));
 
         Button button = (Button)findViewById(R.id.btnAllRuns);
         button.setOnClickListener(new View.OnClickListener() {

@@ -6,13 +6,21 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Point;
+import android.location.Criteria;
+import android.location.Location;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 
+import com.google.android.gms.common.ConnectionResult;
+import com.google.android.gms.common.api.GoogleApiClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.maps.model.LatLng;
+
 import java.util.ArrayList;
 
-public class RunService extends Service {
+public class RunService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
     private final int COORD_UPDATE_INTERVAL = 10;
     private final int NOTIFICATION_ID = 1;
@@ -22,9 +30,11 @@ public class RunService extends Service {
     private Handler coordinatesTimer;
     private Runnable notificationRunnable;
     private Runnable coordinatesRunnable;
-    private ArrayList<Point> coords;
+    private ArrayList<LatLng> coords;
     private int currentTime;
     private NotificationManager notificationManager;
+    private LocationManager locationManager;
+    private GoogleApiClient mGoogleApiClient;
 
     public RunService() {
 
@@ -44,7 +54,6 @@ public class RunService extends Service {
                 notificationTimer.postDelayed(this, 1000);
             }
         };
-        notificationTimer.postDelayed(notificationRunnable, 0);
 
         coordinatesTimer = new Handler();
         coordinatesRunnable = new Runnable() {
@@ -54,14 +63,26 @@ public class RunService extends Service {
                 coordinatesTimer.postDelayed(this, COORD_UPDATE_INTERVAL);
             }
         };
-        coordinatesTimer.postDelayed(coordinatesRunnable, 0);
 
         coords = new ArrayList<>();
 
         currentTime = 0;
 
         notificationManager =
-                (NotificationManager)getSystemService(Context.NOTIFICATION_SERVICE);
+                (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        String bestProvider = locationManager.getBestProvider(new Criteria(), true);
+
+        if (mGoogleApiClient == null) {
+            mGoogleApiClient = new GoogleApiClient.Builder(this)
+                    .addConnectionCallbacks(this)
+                    .addOnConnectionFailedListener(this)
+                    .addApi(LocationServices.API)
+                    .build();
+        }
+
+        notificationTimer.postDelayed(notificationRunnable, 0);
+        coordinatesTimer.postDelayed(coordinatesRunnable, 0);
     }
 
     @Override
@@ -82,13 +103,16 @@ public class RunService extends Service {
                 .setContentText(getCurrentTimeString())
                 .setContentIntent(pendingIntent)
                 .setOngoing(true);
+        mGoogleApiClient.connect();
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
     //Polni lista so koordinati
     private void updateCoordinatesList() {
-
+        Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
+        if (location != null)
+            coords.add(new LatLng(location.getLatitude(), location.getLongitude()));
     }
 
     //Pretvara sekundi vo chitlivo vreme
@@ -98,10 +122,10 @@ public class RunService extends Service {
         int seconds = currentTime % 60;
 
         StringBuilder stringBuilder = new StringBuilder()
-                .append((hours!=0) ? hours : "")
-                .append((hours!=0) ? "h:" : "")
-                .append((minutes!=0) ? minutes : "")
-                .append((minutes!=0) ? "m: " : "")
+                .append((hours != 0) ? hours : "")
+                .append((hours != 0) ? "h:" : "")
+                .append((minutes != 0) ? minutes : "")
+                .append((minutes != 0) ? "m: " : "")
                 .append(seconds)
                 .append("s");
 
@@ -116,8 +140,9 @@ public class RunService extends Service {
         if (currentTime % COORD_UPDATE_INTERVAL != 0)
             updateCoordinatesList();
         notificationManager.cancel(NOTIFICATION_ID);
+        mGoogleApiClient.disconnect();
         Intent intent = new Intent(this, RunStatsActivity.class);
-        intent.putExtra("run", coords);
+        intent.putExtra("coords", coords);
         intent.putExtra("time", currentTime);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
@@ -128,5 +153,20 @@ public class RunService extends Service {
     public IBinder onBind(Intent intent) {
         // TODO: Return the communication channel to the service.
         throw new UnsupportedOperationException("Not yet implemented");
+    }
+
+    @Override
+    public void onConnected(Bundle bundle) {
+
+    }
+
+    @Override
+    public void onConnectionSuspended(int i) {
+
+    }
+
+    @Override
+    public void onConnectionFailed(ConnectionResult connectionResult) {
+
     }
 }
