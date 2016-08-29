@@ -10,13 +10,15 @@
     tools:context="com.feridgoranatanas.projectpinkifinki.RunStatsActivity">
 
     <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="300dp"
         android:layout_height="200dp"
-        android:name="com.google.android.gms.maps.MapFragment"
-        android:id="@+id/Mapa"
-        tools:layout="@layout/google_maps_api"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:id="@+id/map"
         android:layout_marginTop="50dp"
         android:layout_centerHorizontal="true" />
+
+
 
     <Button
         android:layout_width="wrap_content"
