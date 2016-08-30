@@ -25,8 +25,6 @@ public class LogoAnimation extends AppCompatActivity {
         GIFView imageView = (GIFView) findViewById(R.id.imageView);
         imageView.loadGIFResource(this, R.raw.logo_animation);
 
-        getSupportActionBar().hide();
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
