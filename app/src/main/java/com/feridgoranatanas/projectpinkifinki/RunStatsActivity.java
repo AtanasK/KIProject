@@ -19,11 +19,16 @@ import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class RunStatsActivity extends FragmentActivity implements OnMapReadyCallback {
 
     private ArrayList<LatLng> coordsList;
+    private int secondsRun;
     private SupportMapFragment supportMapFragment;
+    private double totalDistance;
+    private Date date;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,9 +36,15 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
         setContentView(R.layout.activity_run_stats);
 
         Bundle bundle = getIntent().getExtras();
-        TextView testView = (TextView)findViewById(R.id.textStats);
         coordsList = (ArrayList<LatLng>)bundle.get("coords");
-        testView.setText(String.format("%d \n Last Coord: %f, %f", bundle.getInt("time"), coordsList.get(0).latitude, coordsList.get(0).longitude));
+        secondsRun = bundle.getInt("time");
+        totalDistance = bundle.getDouble("distance");
+        Calendar c = Calendar.getInstance();
+        date = c.getTime();
+
+        TextView testView = (TextView)findViewById(R.id.textStats);
+        testView.setText(String.format("Time: %d, Distance: %.2f \n Last Coord: %.2f, %.2f \n Date: %s"
+                ,secondsRun, totalDistance, coordsList.get(0).latitude, coordsList.get(0).longitude, date.toString()));
 
         supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
         supportMapFragment.getMapAsync(this);

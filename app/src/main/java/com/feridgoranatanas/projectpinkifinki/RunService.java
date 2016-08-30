@@ -6,9 +6,7 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.location.Criteria;
 import android.location.Location;
-import android.location.LocationManager;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -25,7 +23,6 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     private final int COORD_UPDATE_INTERVAL = 10;
     private final int NOTIFICATION_ID = 1;
 
-    private boolean shouldFinish;
     private Handler notificationTimer;
     private Handler coordinatesTimer;
     private Runnable notificationRunnable;
@@ -33,8 +30,9 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     private ArrayList<LatLng> coords;
     private int currentTime;
     private NotificationManager notificationManager;
-    private LocationManager locationManager;
     private GoogleApiClient mGoogleApiClient;
+    private double totalDistance;
+    private Location previousLocation;
 
     public RunService() {
 
@@ -43,7 +41,8 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     @Override
     public void onCreate() {
         super.onCreate();
-        shouldFinish = false;
+        totalDistance = 0;
+        previousLocation = null;
 
         notificationTimer = new Handler();
         notificationRunnable = new Runnable() {
@@ -70,8 +69,6 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
 
         notificationManager =
                 (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
-        String bestProvider = locationManager.getBestProvider(new Criteria(), true);
 
         if (mGoogleApiClient == null) {
             mGoogleApiClient = new GoogleApiClient.Builder(this)
@@ -81,6 +78,7 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
                     .build();
         }
 
+        mGoogleApiClient.connect();
         notificationTimer.postDelayed(notificationRunnable, 0);
         coordinatesTimer.postDelayed(coordinatesRunnable, 0);
     }
@@ -103,16 +101,24 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
                 .setContentText(getCurrentTimeString())
                 .setContentIntent(pendingIntent)
                 .setOngoing(true);
-        mGoogleApiClient.connect();
 
         notificationManager.notify(NOTIFICATION_ID, builder.build());
     }
 
-    //Polni lista so koordinati
+    //Polni lista so koordinati i presmetuva rastojanie
     private void updateCoordinatesList() {
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
-        if (location != null)
-            coords.add(new LatLng(location.getLatitude(), location.getLongitude()));
+        if (location != null) {
+            LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
+            coords.add(currentPoint);
+        }
+        if (previousLocation == null) {
+            previousLocation = location;
+        }
+        else {
+            totalDistance += previousLocation.distanceTo(location);
+            previousLocation = location;
+        }
     }
 
     //Pretvara sekundi vo chitlivo vreme
@@ -144,6 +150,7 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
         Intent intent = new Intent(this, RunStatsActivity.class);
         intent.putExtra("coords", coords);
         intent.putExtra("time", currentTime);
+        intent.putExtra("distance", totalDistance);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
         stopSelf();
