@@ -1,5 +1,6 @@
 package com.feridgoranatanas.projectpinkifinki;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -7,6 +8,7 @@ import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -17,18 +19,22 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
+import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.RequestParams;
 
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 
-public class RunStatsActivity extends FragmentActivity implements OnMapReadyCallback {
+import cz.msebera.android.httpclient.Header;
 
+public class RunStatsActivity extends FragmentActivity implements OnMapReadyCallback {
     private ArrayList<LatLng> coordsList;
-    private int secondsRun;
+    private int secondsRan;
     private SupportMapFragment supportMapFragment;
     private double totalDistance;
     private Date date;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,17 +43,15 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
 
         Bundle bundle = getIntent().getExtras();
         coordsList = (ArrayList<LatLng>)bundle.get("coords");
-        secondsRun = bundle.getInt("time");
+        secondsRan = bundle.getInt("time");
         totalDistance = bundle.getDouble("distance");
         Calendar c = Calendar.getInstance();
         date = c.getTime();
+        username = getSharedPreferences("username", Context.MODE_PRIVATE).getString("username", "");
 
         TextView testView = (TextView)findViewById(R.id.textStats);
         testView.setText(String.format("Time: %d, Distance: %.2f \n Last Coord: %.2f, %.2f \n Date: %s"
-                ,secondsRun, totalDistance, coordsList.get(0).latitude, coordsList.get(0).longitude, date.toString()));
-
-        supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
-        supportMapFragment.getMapAsync(this);
+                ,secondsRan, totalDistance, coordsList.get(0).latitude, coordsList.get(0).longitude, date.toString()));
 
         Button button = (Button)findViewById(R.id.btnAllRuns);
         button.setOnClickListener(new View.OnClickListener() {
@@ -74,6 +78,11 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
                 //Tuka kje bide sharingot
             }
         });
+
+        supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+        supportMapFragment.getMapAsync(this);
+
+        saveRun();
     }
 
     public void drawLine(ArrayList<LatLng> coords, GoogleMap map) {
@@ -90,5 +99,27 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
         drawLine(coordsList, googleMap);
         LatLngBounds latLngBounds = new LatLngBounds(coordsList.get(0), coordsList.get(coordsList.size() - 1));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 19));
+    }
+
+    private void saveRun() {
+        RequestParams params = new RequestParams();
+        params.put("coords", coordsList);
+        params.put("date", date);
+        params.put("distance", totalDistance);
+        params.put("time", secondsRan);
+        params.put("username", username);
+        ServiceClient.post("add.php", params, new AsyncHttpResponseHandler() {
+            @Override
+            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
+                Toast toast = Toast.makeText(RunStatsActivity.this, R.string.update_failure, Toast.LENGTH_LONG);
+                toast.show();
+            }
+
+            @Override
+            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+                Toast toast = Toast.makeText(RunStatsActivity.this, R.string.update_failure, Toast.LENGTH_LONG);
+                toast.show();
+            }
+        });
     }
 }

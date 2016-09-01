@@ -20,7 +20,7 @@ import java.util.ArrayList;
 
 public class RunService extends Service implements GoogleApiClient.ConnectionCallbacks, GoogleApiClient.OnConnectionFailedListener {
 
-    private final int COORD_UPDATE_INTERVAL = 10;
+    private final int COORD_UPDATE_INTERVAL = 10000;
     private final int NOTIFICATION_ID = 1;
 
     private Handler notificationTimer;
@@ -96,7 +96,7 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
 
         //Ovde kje se menuva ikona za notifikacijata
         Notification.Builder builder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.logo_image)
+                .setSmallIcon(R.drawable.not_bar_logo)
                 .setContentTitle("Running...")
                 .setContentText(getCurrentTimeString())
                 .setContentIntent(pendingIntent)
