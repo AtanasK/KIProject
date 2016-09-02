@@ -7,4 +7,5 @@
     <string name="update_success">Run successfully archived!</string>
     <string name="update_failure">The run couldn\'t be archived...</string>
     <string name="date_format">E dd MM yyyy, HH:mm:ss</string>
+    <string name="acquire_failure">Unable to acquire all runs...</string>
 </resources>

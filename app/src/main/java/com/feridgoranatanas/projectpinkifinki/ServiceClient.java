@@ -8,7 +8,7 @@ import com.loopj.android.http.RequestParams;
  * Created by Ferid on 01-Sep-16.
  */
 public class ServiceClient {
-    private static final String BASE_URL = "http://php-scyx.rhcloud.com/gorun/";
+    public static final String BASE_URL = "http://php-scyx.rhcloud.com/gorun/";
 
     private static AsyncHttpClient client = new AsyncHttpClient();
 

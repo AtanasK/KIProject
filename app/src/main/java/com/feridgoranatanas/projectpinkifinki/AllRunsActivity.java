@@ -1,13 +1,203 @@
 package com.feridgoranatanas.projectpinkifinki;
 
-import android.support.v7.app.AppCompatActivity;
+import android.content.Context;
+import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.v7.app.AppCompatActivity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
+
+import com.google.android.gms.maps.model.LatLng;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 
 public class AllRunsActivity extends AppCompatActivity {
+
+    private List<Run> runs;
+    private String username;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_runs);
+
+        runs = new ArrayList<>();
+        username = getSharedPreferences("username", Context.MODE_PRIVATE).getString("username", "");
+
+        MyAsyncTask myAsyncTask = new MyAsyncTask(this, ServiceClient.BASE_URL + "get.php?username=" + username);
+        myAsyncTask.execute();
+    }
+
+    private class MyAsyncTask extends AsyncTask<Void, Void, String> {
+        private Context mContext;
+        private String mUrl;
+
+        public MyAsyncTask(Context context, String url) {
+            mContext = context;
+            mUrl = url;
+        }
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            String json = getJSON(mUrl);
+            return json;
+        }
+
+        @Override
+        protected void onPostExecute(String strings) {
+            super.onPostExecute(strings);
+            fillList(strings);
+            ListView runsList = (ListView) findViewById(R.id.lvRuns);
+            runsList.setAdapter(new CustomAdapter(AllRunsActivity.this, runs));
+            runsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+                @Override
+                public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                    Intent viewRun = new Intent(AllRunsActivity.this, ViewRunActivity.class);
+                    viewRun.putExtra("run", runs.get(position));
+                    startActivity(viewRun);
+                }
+            });
+        }
+
+        private String getJSON(String url) {
+            HttpURLConnection c = null;
+            try {
+                URL u = new URL(url);
+                c = (HttpURLConnection) u.openConnection();
+                c.connect();
+                int status = c.getResponseCode();
+                switch (status) {
+                    case 200:
+                    case 201:
+                        BufferedReader br = new BufferedReader(new InputStreamReader(c.getInputStream()));
+                        StringBuilder sb = new StringBuilder();
+                        String line;
+                        while ((line = br.readLine()) != null) {
+                            sb.append(line+"\n");
+                        }
+                        br.close();
+                        return sb.toString();
+                }
+
+            } catch (Exception ex) {
+                return ex.toString();
+            } finally {
+                if (c != null) {
+                    try {
+                        c.disconnect();
+                    } catch (Exception ex) {
+                        //disconnect error
+                    }
+                }
+            }
+            return null;
+        }
+
+        private void fillList(String jsonArrayString) {
+            try {
+                JSONArray response = new JSONArray((jsonArrayString));
+                for (int i = 0; i < response.length(); ++i) {
+                    JSONObject run = response.getJSONObject(i);
+                    Run newRun = new Run();
+
+                    String date = run.getString("date");
+                    newRun.setDate(date);
+
+                    double distance = run.getDouble("distance");
+                    newRun.setDistance(distance);
+
+                    int time = run.getInt("time");
+                    newRun.setSeconds(time);
+
+                    String jsonArray = run.getString("coords");
+                    jsonArray = jsonArray.replace("\\", "");
+                    if (jsonArray.charAt(0) != '[') {
+                        runs.add(newRun);
+                        continue;
+                    }
+                    JSONArray coords = new JSONArray(jsonArray);
+                    for (int j = 0; j < coords.length(); ++j) {
+                        JSONObject coord = coords.getJSONObject(j);
+                        double lat = coord.getDouble("lat");
+                        double lng = coord.getDouble("lng");
+                        LatLng coordinate = new LatLng(lat, lng);
+                        newRun.addCoord(coordinate);
+                    }
+                    runs.add(newRun);
+                }
+            }
+            catch (JSONException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    private void getRuns() {
+//        RequestParams params = new RequestParams();
+//        params.add("username", username);
+//        ServiceClient.get("get.php", params, new JsonHttpResponseHandler() {
+//
+//            @Override
+//            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
+//                super.onFailure(statusCode, headers, throwable, errorResponse);
+//                Toast.makeText(AllRunsActivity.this, R.string.acquire_failure, Toast.LENGTH_LONG);
+//            }
+//
+//            @Override
+//            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
+//                super.onSuccess(statusCode, headers, response);
+//                //Parse JSON
+//                try {
+//                    for (int i = 0; i < response.length(); ++i) {
+//                        JSONObject run = response.getJSONObject(i);
+//                        Run newRun = new Run();
+//
+//                        String date = run.getString("date");
+//                        newRun.setDate(date);
+//
+//                        double distance = run.getDouble("distance");
+//                        newRun.setDistance(distance);
+//
+//                        int time = run.getInt("time");
+//                        newRun.setSeconds(time);
+//
+//                        String jsonArray = run.getString("coords");
+//                        jsonArray = jsonArray.replace("\\", "");
+//                        if (jsonArray.charAt(0) != '[') {
+//                            runs.add(newRun);
+//                            continue;
+//                        }
+//                        JSONArray coords = new JSONArray(jsonArray);
+//                        for (int j = 0; j < coords.length(); ++j) {
+//                            JSONObject coord = coords.getJSONObject(j);
+//                            double lat = coord.getDouble("lat");
+//                            double lng = coord.getDouble("lng");
+//                            LatLng coordinate = new LatLng(lat, lng);
+//                            newRun.addCoord(coordinate);
+//                        }
+//                        runs.add(newRun);
+//                    }
+//                }
+//                catch (JSONException e) {
+//                    e.printStackTrace();
+//                }
+//            }
+//        });
     }
 }
