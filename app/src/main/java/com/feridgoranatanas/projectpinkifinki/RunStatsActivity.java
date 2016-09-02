@@ -19,12 +19,19 @@ import com.google.android.gms.maps.model.LatLngBounds;
 import com.google.android.gms.maps.model.MarkerOptions;
 import com.google.android.gms.maps.model.Polyline;
 import com.google.android.gms.maps.model.PolylineOptions;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 import cz.msebera.android.httpclient.Header;
 
@@ -35,6 +42,7 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
     private double totalDistance;
     private Date date;
     private String username;
+    private DateFormat dateFormat;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -46,12 +54,13 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
         secondsRan = bundle.getInt("time");
         totalDistance = bundle.getDouble("distance");
         Calendar c = Calendar.getInstance();
+        dateFormat = new SimpleDateFormat(getString(R.string.date_format), Locale.ENGLISH);
         date = c.getTime();
         username = getSharedPreferences("username", Context.MODE_PRIVATE).getString("username", "");
 
         TextView testView = (TextView)findViewById(R.id.textStats);
         testView.setText(String.format("Time: %d, Distance: %.2f \n Last Coord: %.2f, %.2f \n Date: %s"
-                ,secondsRan, totalDistance, coordsList.get(0).latitude, coordsList.get(0).longitude, date.toString()));
+                ,secondsRan, totalDistance, coordsList.get(0).latitude, coordsList.get(0).longitude, dateFormat.format(date)));
 
         Button button = (Button)findViewById(R.id.btnAllRuns);
         button.setOnClickListener(new View.OnClickListener() {
@@ -103,20 +112,33 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
 
     private void saveRun() {
         RequestParams params = new RequestParams();
-        params.put("coords", coordsList);
-        params.put("date", date);
+        JSONArray j = new JSONArray();
+        try {
+        for(LatLng coord: coordsList) {
+                JSONObject coordJSON = new JSONObject();
+                coordJSON.put("lat", coord.latitude);
+                coordJSON.put("lng", coord.longitude);
+                j.put(coordJSON);
+            }
+        }
+        catch (JSONException e) {
+            e.printStackTrace();
+        }
+        params.put("coords", j.toString());
+        params.put("date", dateFormat.format(date));
         params.put("distance", totalDistance);
         params.put("time", secondsRan);
         params.put("username", username);
-        ServiceClient.post("add.php", params, new AsyncHttpResponseHandler() {
+        ServiceClient.post("add.php", params, new JsonHttpResponseHandler() {
             @Override
-            public void onSuccess(int statusCode, Header[] headers, byte[] responseBody) {
-                Toast toast = Toast.makeText(RunStatsActivity.this, R.string.update_failure, Toast.LENGTH_LONG);
+            public void onSuccess(int statusCode, Header[] headers, JSONObject response) {
+                super.onSuccess(statusCode, headers, response);
+                Toast toast = Toast.makeText(RunStatsActivity.this, R.string.update_success, Toast.LENGTH_LONG);
                 toast.show();
             }
 
             @Override
-            public void onFailure(int statusCode, Header[] headers, byte[] responseBody, Throwable error) {
+            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONObject errorResponse) {
                 Toast toast = Toast.makeText(RunStatsActivity.this, R.string.update_failure, Toast.LENGTH_LONG);
                 toast.show();
             }

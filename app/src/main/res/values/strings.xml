@@ -6,4 +6,5 @@
     <string name="go_run">Go Run!</string>
     <string name="update_success">Run successfully archived!</string>
     <string name="update_failure">The run couldn\'t be archived...</string>
+    <string name="date_format">E dd MM yyyy, HH:mm:ss</string>
 </resources>
