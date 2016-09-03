@@ -9,12 +9,48 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context="com.feridgoranatanas.projectpinkifinki.ViewRunActivity">
 
+    <fragment
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="300dp"
+        android:layout_height="200dp"
+        android:name="com.google.android.gms.maps.SupportMapFragment"
+        android:id="@+id/map"
+        android:layout_marginTop="50dp"
+        android:layout_centerHorizontal="true" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="BACK TO ALL RUNS"
+        android:id="@+id/bBackToAllRuns"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:background="#262626"
+        android:height="20dp"
+        android:textColor="#fafafa"
+        android:textSize="15dp" />
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="HOME"
+        android:id="@+id/bHome"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true"
+        android:textColor="#fafafa"
+        android:height="20dp"
+        android:textSize="15dp"
+        android:background="#262626" />
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text=""
-        android:id="@+id/tvTest"
-        android:layout_alignParentTop="true"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/tvStats"
+        android:layout_below="@+id/map"
+        android:layout_centerHorizontal="true"
+        android:textSize="20dp"
+        android:textColor="#262626" />
 </RelativeLayout>

@@ -36,7 +36,7 @@ public class CustomAdapter extends BaseAdapter {
 
     @Override
     public long getItemId(int position) {
-        return position;
+        return runs.size() - 1 - position;
     }
 
     @Override
@@ -44,13 +44,29 @@ public class CustomAdapter extends BaseAdapter {
 
         View listItem = layoutInflater.inflate(R.layout.list_item, null);
         Run currentRun = runs.get(position);
-        final int pos = position;
 
         TextView tvDate = (TextView)listItem.findViewById(R.id.tvDate);
         tvDate.setText(currentRun.getDate());
         TextView tvStats = (TextView)listItem.findViewById(R.id.tvStats);
-        tvStats.setText(String.format("%.2fkm in %d seconds.", currentRun.getDistance(), currentRun.getSeconds()));
+        tvStats.setText(String.format("%.2fkm in %s.", currentRun.getDistance(), getCurrentTimeString(currentRun.getSeconds())));
 
         return listItem;
+    }
+
+
+    private String getCurrentTimeString(int currentTime) {
+        int hours = currentTime / 3600;
+        int minutes = (currentTime % 3600) / 60;
+        int seconds = currentTime % 60;
+
+        StringBuilder stringBuilder = new StringBuilder()
+                .append((hours != 0) ? hours : "")
+                .append((hours != 0) ? "h:" : "")
+                .append((minutes != 0) ? minutes : "")
+                .append((minutes != 0) ? "m: " : "")
+                .append(seconds)
+                .append("s");
+
+        return stringBuilder.toString();
     }
 }

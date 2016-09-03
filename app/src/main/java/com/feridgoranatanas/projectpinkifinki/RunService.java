@@ -33,6 +33,9 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     private GoogleApiClient mGoogleApiClient;
     private double totalDistance;
     private Location previousLocation;
+    private Intent intent;
+    private PendingIntent pendingIntent;
+    private Notification.Builder builder;
 
     public RunService() {
 
@@ -78,6 +81,10 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
                     .build();
         }
 
+        intent = new Intent(this, RunActivity.class);
+        pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+        startForeground(NOTIFICATION_ID, getNotification(builder));
+
         mGoogleApiClient.connect();
         notificationTimer.postDelayed(notificationRunnable, 0);
         coordinatesTimer.postDelayed(coordinatesRunnable, 0);
@@ -89,20 +96,7 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     }
 
     private void updateNotification() {
-
-        Intent intent = new Intent(this, RunActivity.class);
-
-        PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
-
-        //Ovde kje se menuva ikona za notifikacijata
-        Notification.Builder builder = new Notification.Builder(this)
-                .setSmallIcon(R.drawable.not_bar_logo)
-                .setContentTitle("Running...")
-                .setContentText(getCurrentTimeString())
-                .setContentIntent(pendingIntent)
-                .setOngoing(true);
-
-        notificationManager.notify(NOTIFICATION_ID, builder.build());
+        notificationManager.notify(NOTIFICATION_ID, getNotification(builder));
     }
 
     //Polni lista so koordinati i presmetuva rastojanie
@@ -153,6 +147,7 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
         intent.putExtra("distance", totalDistance);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
+        stopForeground(true);
         stopSelf();
     }
 
@@ -175,5 +170,16 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     @Override
     public void onConnectionFailed(ConnectionResult connectionResult) {
 
+    }
+
+    //Ovde kje se menuva ikona za notifikacijata
+    private Notification getNotification(Notification.Builder builder) {
+        builder = new Notification.Builder(this)
+                .setSmallIcon(R.drawable.not_bar_logo)
+                .setContentTitle("Running...")
+                .setContentText(getCurrentTimeString())
+                .setContentIntent(pendingIntent)
+                .setOngoing(true);
+        return builder.build();
     }
 }

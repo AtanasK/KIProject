@@ -20,6 +20,7 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 public class AllRunsActivity extends AppCompatActivity {
@@ -63,6 +64,7 @@ public class AllRunsActivity extends AppCompatActivity {
         protected void onPostExecute(String strings) {
             super.onPostExecute(strings);
             fillList(strings);
+            Collections.reverse(runs);
             ListView runsList = (ListView) findViewById(R.id.lvRuns);
             runsList.setAdapter(new CustomAdapter(AllRunsActivity.this, runs));
             runsList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -146,58 +148,5 @@ public class AllRunsActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-    }
-
-    private void getRuns() {
-//        RequestParams params = new RequestParams();
-//        params.add("username", username);
-//        ServiceClient.get("get.php", params, new JsonHttpResponseHandler() {
-//
-//            @Override
-//            public void onFailure(int statusCode, Header[] headers, Throwable throwable, JSONArray errorResponse) {
-//                super.onFailure(statusCode, headers, throwable, errorResponse);
-//                Toast.makeText(AllRunsActivity.this, R.string.acquire_failure, Toast.LENGTH_LONG);
-//            }
-//
-//            @Override
-//            public void onSuccess(int statusCode, Header[] headers, JSONArray response) {
-//                super.onSuccess(statusCode, headers, response);
-//                //Parse JSON
-//                try {
-//                    for (int i = 0; i < response.length(); ++i) {
-//                        JSONObject run = response.getJSONObject(i);
-//                        Run newRun = new Run();
-//
-//                        String date = run.getString("date");
-//                        newRun.setDate(date);
-//
-//                        double distance = run.getDouble("distance");
-//                        newRun.setDistance(distance);
-//
-//                        int time = run.getInt("time");
-//                        newRun.setSeconds(time);
-//
-//                        String jsonArray = run.getString("coords");
-//                        jsonArray = jsonArray.replace("\\", "");
-//                        if (jsonArray.charAt(0) != '[') {
-//                            runs.add(newRun);
-//                            continue;
-//                        }
-//                        JSONArray coords = new JSONArray(jsonArray);
-//                        for (int j = 0; j < coords.length(); ++j) {
-//                            JSONObject coord = coords.getJSONObject(j);
-//                            double lat = coord.getDouble("lat");
-//                            double lng = coord.getDouble("lng");
-//                            LatLng coordinate = new LatLng(lat, lng);
-//                            newRun.addCoord(coordinate);
-//                        }
-//                        runs.add(newRun);
-//                    }
-//                }
-//                catch (JSONException e) {
-//                    e.printStackTrace();
-//                }
-//            }
-//        });
     }
 }
