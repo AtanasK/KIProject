@@ -7,6 +7,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.location.Location;
+import android.location.LocationManager;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -52,7 +55,9 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
             @Override
             public void run() {
                 updateNotification();
-                currentTime++;
+                if (isNetworkAvailable() && isGPSEnabled()) {
+                    currentTime++;
+                }
                 notificationTimer.postDelayed(this, 1000);
             }
         };
@@ -61,7 +66,9 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
         coordinatesRunnable = new Runnable() {
             @Override
             public void run() {
-                updateCoordinatesList();
+                if (isNetworkAvailable() && isGPSEnabled()) {
+                    updateCoordinatesList();
+                }
                 coordinatesTimer.postDelayed(this, COORD_UPDATE_INTERVAL);
             }
         };
@@ -176,10 +183,24 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
     private Notification getNotification(Notification.Builder builder) {
         builder = new Notification.Builder(this)
                 .setSmallIcon(R.drawable.not_bar_logo)
-                .setContentTitle("Running...")
+                .setContentTitle((isNetworkAvailable() && isGPSEnabled())?"Running...":"Error")
                 .setContentText(getCurrentTimeString())
                 .setContentIntent(pendingIntent)
                 .setOngoing(true);
+        if (!(isNetworkAvailable() && isGPSEnabled()))
+            builder.setStyle(new Notification.BigTextStyle().bigText("Check internet connection and gps availability"));
         return builder.build();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private boolean isGPSEnabled() {
+        LocationManager locationManager = (LocationManager) getSystemService(LOCATION_SERVICE);
+        return locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER) || locationManager.isProviderEnabled(LocationManager.NETWORK_PROVIDER);
     }
 }
