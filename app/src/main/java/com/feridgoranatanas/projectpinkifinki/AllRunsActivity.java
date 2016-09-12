@@ -2,12 +2,16 @@ package com.feridgoranatanas.projectpinkifinki;
 
 import android.content.Context;
 import android.content.Intent;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.model.LatLng;
 
@@ -27,17 +31,32 @@ public class AllRunsActivity extends AppCompatActivity {
 
     private List<Run> runs;
     private String username;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_runs);
+        if (!isNetworkAvailable()) {
+            Toast.makeText(this, "Check Internet connection", Toast.LENGTH_LONG).show();
+        }
+        handler = new Handler();
+        Runnable runnable = new Runnable() {
+            @Override
+            public void run() {
+                if (!isNetworkAvailable())
+                    handler.postDelayed(this, 1000);
+                else
+                {
+                    runs = new ArrayList<>();
+                    username = getSharedPreferences("username", Context.MODE_PRIVATE).getString("username", "");
 
-        runs = new ArrayList<>();
-        username = getSharedPreferences("username", Context.MODE_PRIVATE).getString("username", "");
-
-        MyAsyncTask myAsyncTask = new MyAsyncTask(this, ServiceClient.BASE_URL + "get.php?username=" + username);
-        myAsyncTask.execute();
+                    MyAsyncTask myAsyncTask = new MyAsyncTask(AllRunsActivity.this, ServiceClient.BASE_URL + "get.php?username=" + username);
+                    myAsyncTask.execute();
+                }
+            }
+        };
+        handler.post(runnable);
     }
 
     private class MyAsyncTask extends AsyncTask<Void, Void, String> {
@@ -148,5 +167,12 @@ public class AllRunsActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }

@@ -3,7 +3,10 @@ package com.feridgoranatanas.projectpinkifinki;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
@@ -43,6 +46,8 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
     private Date date;
     private String username;
     private DateFormat dateFormat;
+    private Handler handler;
+    private boolean first;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +96,22 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
         supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
         supportMapFragment.getMapAsync(this);
 
-        saveRun();
+        first = true;
+        handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!isNetworkAvailable()) {
+                    if (first) {
+                        Toast.makeText(RunStatsActivity.this, "Run will be archived as soon as Internet connection is back!", Toast.LENGTH_LONG).show();
+                        first = false;
+                    }
+                    handler.postDelayed(this, 1000);
+                }
+                else
+                    saveRun();
+            }
+        });
     }
 
     public void drawLine(ArrayList<LatLng> coords, GoogleMap map) {
@@ -143,5 +163,12 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
                 toast.show();
             }
         });
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
