@@ -64,8 +64,8 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
         username = getSharedPreferences("username", Context.MODE_PRIVATE).getString("username", "");
 
         TextView testView = (TextView)findViewById(R.id.textStats);
-        testView.setText(String.format("Time: %d, Distance: %.2f \n Last Coord: %.2f, %.2f \n Date: %s"
-                ,secondsRan, totalDistance, coordsList.get(0).latitude, coordsList.get(0).longitude, dateFormat.format(date)));
+        testView.setText(String.format("Time: %s, Distance: %.2f \n Last Coord: %.2f, %.2f \n Date: %s"
+                ,getCurrentTimeString(secondsRan), totalDistance, (coordsList.size() != 0)?coordsList.get(0).latitude:0.0, (coordsList.size() != 0)?coordsList.get(0).longitude:0.0, dateFormat.format(date)));
 
         Button button = (Button)findViewById(R.id.btnAllRuns);
         button.setOnClickListener(new View.OnClickListener() {
@@ -93,25 +93,27 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
             }
         });
 
-        supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
-        supportMapFragment.getMapAsync(this);
-
-        first = true;
-        handler = new Handler();
-        handler.post(new Runnable() {
-            @Override
-            public void run() {
-                if (!isNetworkAvailable()) {
-                    if (first) {
-                        Toast.makeText(RunStatsActivity.this, "Run will be archived as soon as Internet connection is back!", Toast.LENGTH_LONG).show();
-                        first = false;
+        if (savedInstanceState == null) {
+            first = true;
+            handler = new Handler();
+            handler.post(new Runnable() {
+                @Override
+                public void run() {
+                    if (!isNetworkAvailable()) {
+                        if (first) {
+                            Toast.makeText(RunStatsActivity.this, "Run will be archived as soon as Internet connection is available!", Toast.LENGTH_LONG).show();
+                            first = false;
+                        }
+                        handler.postDelayed(this, 1000);
                     }
-                    handler.postDelayed(this, 1000);
+                    else {
+                        supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+                        supportMapFragment.getMapAsync(RunStatsActivity.this);
+                        saveRun();
+                    }
                 }
-                else
-                    saveRun();
-            }
-        });
+            });
+        }
     }
 
     public void drawLine(ArrayList<LatLng> coords, GoogleMap map) {
@@ -125,6 +127,8 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
+        if (coordsList.isEmpty())
+            return;
         drawLine(coordsList, googleMap);
         LatLngBounds latLngBounds = new LatLngBounds(coordsList.get(0), coordsList.get(coordsList.size() - 1));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 19));
@@ -170,5 +174,21 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
                 = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+    private String getCurrentTimeString(int currentTime) {
+        int hours = currentTime / 3600;
+        int minutes = (currentTime % 3600) / 60;
+        int seconds = currentTime % 60;
+
+        StringBuilder stringBuilder = new StringBuilder()
+                .append((hours != 0) ? hours : "")
+                .append((hours != 0) ? "h:" : "")
+                .append((minutes != 0) ? minutes : "")
+                .append((minutes != 0) ? "m: " : "")
+                .append(seconds)
+                .append("s");
+
+        return stringBuilder.toString();
     }
 }

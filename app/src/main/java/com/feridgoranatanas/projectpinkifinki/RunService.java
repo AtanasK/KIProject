@@ -108,6 +108,8 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
 
     //Polni lista so koordinati i presmetuva rastojanie
     private void updateCoordinatesList() {
+        if (!isNetworkAvailable() || !isGPSEnabled())
+            return;
         Location location = LocationServices.FusedLocationApi.getLastLocation(mGoogleApiClient);
         if (location != null) {
             LatLng currentPoint = new LatLng(location.getLatitude(), location.getLongitude());
@@ -146,7 +148,7 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
         coordinatesTimer.removeCallbacks(coordinatesRunnable);
         if (currentTime % COORD_UPDATE_INTERVAL != 0)
             updateCoordinatesList();
-        notificationManager.cancel(NOTIFICATION_ID);
+        stopForeground(true);
         mGoogleApiClient.disconnect();
         Intent intent = new Intent(this, RunStatsActivity.class);
         intent.putExtra("coords", coords);
@@ -154,7 +156,6 @@ public class RunService extends Service implements GoogleApiClient.ConnectionCal
         intent.putExtra("distance", totalDistance);
         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         startActivity(intent);
-        stopForeground(true);
         stopSelf();
     }
 

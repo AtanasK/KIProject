@@ -38,7 +38,7 @@ public class AllRunsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_all_runs);
         if (!isNetworkAvailable()) {
-            Toast.makeText(this, "Check Internet connection", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "All runs will be filled when an Internet connection is available", Toast.LENGTH_LONG).show();
         }
         handler = new Handler();
         Runnable runnable = new Runnable() {

@@ -1,12 +1,17 @@
 package com.feridgoranatanas.projectpinkifinki;
 
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.FragmentActivity;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
@@ -22,8 +27,10 @@ import java.util.List;
 
 public class ViewRunActivity extends FragmentActivity implements OnMapReadyCallback {
 
-    Run run;
-    SupportMapFragment supportMapFragment;
+    private Run run;
+    private SupportMapFragment supportMapFragment;
+    private boolean first;
+    private Handler handler;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,11 +64,32 @@ public class ViewRunActivity extends FragmentActivity implements OnMapReadyCallb
                 startActivity(home);
             }
         });
+
+        first = true;
+        handler = new Handler();
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                if (!isNetworkAvailable()) {
+                    if (first) {
+                        Toast.makeText(ViewRunActivity.this, "Map will update as soon as an Internet connection is available!", Toast.LENGTH_LONG).show();
+                        first = false;
+                    }
+                    handler.postDelayed(this, 1000);
+                }
+                else {
+                    supportMapFragment = (SupportMapFragment)getSupportFragmentManager().findFragmentById(R.id.map);
+                    supportMapFragment.getMapAsync(ViewRunActivity.this);
+                }
+            }
+        });
     }
 
     @Override
     public void onMapReady(GoogleMap googleMap) {
         List<LatLng> coordsList = run.getCoords();
+        if (coordsList.size() == 0)
+            return;
         drawLine(coordsList, googleMap);
         LatLngBounds latLngBounds = new LatLngBounds(coordsList.get(0), coordsList.get(coordsList.size() - 1));
         googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(latLngBounds.getCenter(), 19));
@@ -90,5 +118,12 @@ public class ViewRunActivity extends FragmentActivity implements OnMapReadyCallb
                 .append("s");
 
         return stringBuilder.toString();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager
+                = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 }
