@@ -89,7 +89,11 @@ public class RunStatsActivity extends FragmentActivity implements OnMapReadyCall
         button.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                //Tuka kje bide sharingot
+                String text = String.format("I just ran %.2f km in %s! Beat me if you can!", totalDistance, getCurrentTimeString(secondsRan));
+                Intent share = new Intent(Intent.ACTION_SEND);
+                share.setType("text/plain");
+                share.putExtra(Intent.EXTRA_TEXT, text);
+                startActivity(Intent.createChooser(share, "Where do  you want to share your acomplishment?"));
             }
         });
 

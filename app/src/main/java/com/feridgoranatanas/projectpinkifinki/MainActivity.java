@@ -35,12 +35,12 @@ public class MainActivity extends AppCompatActivity {
         allRuns.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if (isNetworkAvailable() && isGPSEnabled()) {
+                if (isNetworkAvailable()) {
                     Intent allRuns = new Intent(MainActivity.this, AllRunsActivity.class);
                     startActivity(allRuns);
                 }
                 else {
-                    Toast.makeText(MainActivity.this, "Please chceck Internet connection and GPS", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "An Internet connection is required!", Toast.LENGTH_LONG).show();
                 }
             }
         });
@@ -54,7 +54,7 @@ public class MainActivity extends AppCompatActivity {
                     startActivity(runStart);
                 }
                 else {
-                    Toast.makeText(MainActivity.this, "Please chceck Internet connection and GPS", Toast.LENGTH_LONG).show();
+                    Toast.makeText(MainActivity.this, "Internet connection and GPS need to be enabled!", Toast.LENGTH_LONG).show();
                 }
             }
         });
